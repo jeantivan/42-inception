@@ -3,3 +3,6 @@ secrets
 .env
 
 Notas-*.md
+
+# Ignore volume data
+data/*
