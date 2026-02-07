@@ -7,7 +7,7 @@ LABEL maintainer="dev.jeantivan@gmail.com"
 LABEL description="Nginx with TLS 1.3 from scratch on Alpine Linux"
 
 # Build variables
-ARG NGINX_VERSION=${1.29.4}
+ARG NGINX_VERSION=1.29.4
 ARG PCRE_VERSION=10.44
 ARG ZLIB_VERSION=1.3.1
 ARG OPENSSL_VERSION=3.1.5
