@@ -1,0 +1,124 @@
+services:
+
+  nginx:
+    build:
+      context: ./requirements/nginx
+      dockerfile: Dockerfile
+      args:
+        ALPINE_VERSION: ${ALPINE_VERSION:-3.22}
+    container_name: nginx
+    hostname: nginx
+    restart: always
+
+    environment:
+      - DOMAIN_NAME=${DOMAIN_NAME:-localhost}
+      - DEV_MODE=${DEV_MODE:-true}
+      - TZ=${TZ:-UTC}
+      - NGINX_VERSION=${NGINX_VERSION:-1.29.4}
+
+    ports:
+      # - "${HTTP_PORT:-80}"
+      - "${HTTPS_PORT:-443}:443"
+
+    networks:
+      - inception_network
+
+    volumes:
+      - wordpress_data:/var/www/html
+
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/healthcheck.sh"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      wordpress:
+        condition: service_started
+  mariadb:
+    build:
+      context: ./requirements/mariadb
+      dockerfile: Dockerfile
+    container_name: mariadb
+    hostname: mariadb
+    restart: always
+
+    secrets:
+      - db_root_password
+      - db_password
+
+    environment:
+      - MARIADB_DATABASE=${DB_NAME}
+      - MARIADB_USER=${DB_USERNAME}
+      - TZ=${TZ:-UTC}
+      - ALPINE_VERSION=${ALPINE_VERSION:-3.22}
+      - VOLUME_DIR=${VOLUME_DIR:-./data}/mariadb
+
+    volumes:
+      - mariadb_data:/var/lib/mysql/
+
+    ports:
+      - "${DB_PORT:-3306}"
+    networks:
+      - inception_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "${DB_USERNAME}", "-p$$(cat /run/secrets/db_password)"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  wordpress:
+    build:
+      context: ./requirements/wordpress
+      dockerfile: Dockerfile
+    container_name: wordpress
+    hostname: wordpress
+    restart: on-failure
+    volumes:
+      - wordpress_data:/var/www/html
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    environment:
+      - WORDPRESS_DB_HOST=mariadb
+      - WORDPRESS_DB_USER=${DB_USERNAME}
+      - WORDPRESS_DB_NAME=${DB_NAME}
+      - TZ=${TZ:-UTC}
+    secrets:
+      - db_password
+    networks:
+      - inception_network
+    healthcheck:
+      test: ["CMD-SHELL", "pidof php-fpm83 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  mariadb_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${VOLUME_DIR:-./data}/mariadb/
+      o: bind
+  wordpress_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${VOLUME_DIR:-./data}/wordpress/
+
+secrets:
+  db_root_password:
+    file: ${DB_ROOT_PASSWORD_FILE}
+  db_password:
+    file: ${DB_PASSWORD_FILE}
+
+# Redes
+networks:
+  inception_network:
+    driver: bridge
