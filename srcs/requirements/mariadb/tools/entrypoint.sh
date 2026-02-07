@@ -53,6 +53,8 @@ EOSQL
 		wait "$pid"
 
 		echo "[Entrypoint] MariaDB initialization complete"
+	else
+		echo "[Entrypoint] MariaDB already initialized, skipping setup"
 	fi
 fi
 
