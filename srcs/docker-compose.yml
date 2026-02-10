@@ -96,7 +96,6 @@ services:
       - WORDPRESS_GUESS_PASSWORD_FILE=${WORDPRESS_GUESS_PASSWORD_FILE}
       - TZ=${TZ:-UTC}
 
-
     secrets:
       - db_password
       - wordpress_admin_password
@@ -113,6 +112,34 @@ services:
       timeout: 5s
       retries: 3
       start_period: 30s
+
+  ftp:
+    build:
+      context: ./requirements/ftp
+      dockerfile: Dockerfile
+    container_name: ftp
+    hostname: ftp
+    restart: on-failure
+    depends_on:
+      wordpress:
+        condition: service_started
+
+    environment:
+      - FTP_USER=${FTP_USER}
+      - TZ=${TZ:-UTC}
+
+    ports:
+      - "21:21"
+      - "30000-30009:30000-30009"
+
+    secrets:
+      - ftp_password
+
+    volumes:
+      - wordpress_data:/var/www/html
+
+    networks:
+      - inception_network
 
 volumes:
   mariadb_data:
@@ -137,6 +164,8 @@ secrets:
     file: ${WORDPRESS_ADMIN_PASSWORD_FILE}
   wordpress_guess_password:
     file: ${WORDPRESS_GUESS_PASSWORD_FILE}
+  ftp_password:
+    file: ${FTP_PASSWORD_FILE}
 
 # Redes
 networks:
