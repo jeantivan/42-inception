@@ -123,6 +123,12 @@ services:
     depends_on:
       wordpress:
         condition: service_started
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "21"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
     environment:
       - FTP_USER=${FTP_USER}
@@ -137,6 +143,25 @@ services:
 
     volumes:
       - wordpress_data:/var/www/html
+
+    networks:
+      - inception_network
+
+  redis:
+    build:
+      context: ./requirements/redis
+      dockerfile: Dockerfile
+    container_name: redis
+    hostname: redis
+    restart: on-failure
+    depends_on:
+      wordpress:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
 
     networks:
       - inception_network
