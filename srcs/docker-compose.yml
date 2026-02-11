@@ -82,6 +82,8 @@ services:
     depends_on:
       mariadb:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       - WORDPRESS_DB_HOST=mariadb
       - WORDPRESS_DB_USER=${DB_USERNAME}
@@ -95,6 +97,7 @@ services:
       - WORDPRESS_GUESS_EMAIL=${WORDPRESS_GUESS_EMAIL}
       - WORDPRESS_GUESS_PASSWORD_FILE=${WORDPRESS_GUESS_PASSWORD_FILE}
       - TZ=${TZ:-UTC}
+      - DEV_MODE=${DEV_MODE:-true}
 
     secrets:
       - db_password
@@ -154,11 +157,9 @@ services:
     container_name: redis
     hostname: redis
     restart: on-failure
-    depends_on:
-      wordpress:
-        condition: service_started
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
+      start_period: 5s
       interval: 10s
       timeout: 3s
       retries: 3
