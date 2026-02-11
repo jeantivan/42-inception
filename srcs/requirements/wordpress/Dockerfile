@@ -5,19 +5,35 @@ FROM alpine:${ALPINE_VERSION}
 RUN apk add --no-cache \
 	curl \
 	php83 \
-	php83-fpm \
-	php83-mysqli \
-	php83-curl \
-	php83-gd \
-	php83-xml \
-	php83-mbstring \
-	php83-zip \
 	php83-bcmath \
+	php83-common \
+	php83-ctype \
+	php83-curl \
+	php83-dom \
+	php83-exif \
+	php83-fileinfo \
+	php83-fpm \
+	php83-gd \
+	php83-iconv \
+	php83-intl \
+	php83-json \
+	php83-mbstring \
+	php83-mysqli \
+	php83-opcache \
+	php83-openssl \
+	php83-pdo \
+	php83-pdo_mysql \
+	php83-pecl-redis \
 	php83-phar \
-	php83-pdo_mysql
+	php83-session \
+	php83-simplexml \
+	php83-tokenizer \
+	php83-xml \
+	php83-xmlreader \
+	php83-xmlwriter \
+	php83-zip
 
 WORKDIR /tmp
-
 
 # Download WP-CLI
 RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
@@ -30,19 +46,20 @@ RUN echo "memory_limit = 256M" > /etc/php83/conf.d/memory.ini
 
 WORKDIR /var/www/html
 
-# Configure PHP-FPM to listen on port 9000
-RUN sed -i 's/listen = 127.0.0.1:9000/listen = 9000/' /etc/php83/php-fpm.d/www.conf
+RUN addgroup -S nobody 2>/dev/null || true && adduser -S nobody -D -H -G nobody 2>/dev/null || true && \
+	mkdir -p /run/php && chown -R nobody:nobody /run/php /var/www/html
+
+COPY tools/php-fpm.conf /etc/php83/php-fpm.conf
+COPY tools/www.conf /etc/php83/php-fpm.d/www.conf
+COPY tools/php.ini /etc/php83/conf.d/wordpress.ini
 
 # Copy entrypoint script
 COPY tools/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# Create necessary directories and set permissions
-RUN mkdir -p /var/www/html
-RUN chown -R nobody:nobody /var/www/html
+EXPOSE 9000
 
-# Run entrypoint script
 ENTRYPOINT [ "/usr/local/bin/entrypoint.sh" ]
 
 # Run PHP-FPM in the foreground
-CMD [ "php-fpm83", "-F" ]
+CMD [ "php-fpm83", "--nodaemonize", "--fpm-config", "/etc/php83/php-fpm.conf" ]
