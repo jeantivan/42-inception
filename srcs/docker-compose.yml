@@ -31,12 +31,13 @@ services:
       interval: 30s
       timeout: 3s
       retries: 3
-      start_period: 10s
 
     depends_on:
       mariadb:
         condition: service_healthy
       wordpress:
+        condition: service_started
+      adminer:
         condition: service_started
   mariadb:
     build:
@@ -163,6 +164,33 @@ services:
       interval: 10s
       timeout: 3s
       retries: 3
+
+    networks:
+      - inception_network
+
+  adminer:
+    build:
+      context: ./requirements/adminer
+      dockerfile: Dockerfile
+    container_name: adminer
+    hostname: adminer
+    restart: on-failure
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+    environment:
+      - TZ=${TZ:-UTC}
+      - ALPINE_VERSION=${ALPINE_VERSION:-3.22}
+
+    ports:
+      - "8080"
 
     networks:
       - inception_network
