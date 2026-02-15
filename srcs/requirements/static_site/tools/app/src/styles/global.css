@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+@theme {
+	--font-family: "Inter", sans-serif, system-ui;
+	--font-display: 'Gajraj One', sans-serif, system-ui;
+}
+
+body {
+	font-family: var(--font-family);
+}
+
+
+.btn {
+	@apply border-green-700 text-black relative overflow-hidden;
+	z-index: 1;
+	transition: color 0.1s ease;
+	transition-delay: 0.1s;
+}
+
+.btn::after {
+	@apply absolute bg-green-700;
+	content: "";
+	top: 50%;
+	left: 50%;
+	width: 0;
+	height: 150%;
+	transform: translate(-50%, -50%) rotate(-45deg) scaleX(1);
+	transition: all 0.7s ease;
+	z-index: -1;
+	opacity: 1;
+}
+
+.btn:hover {
+	color: white;
+	transform: scale(1.05);
+}
+
+.btn:hover::after {
+	width: 200%;
+	transform: scale(20) rotate(-45deg);
+	opacity: 1;
+}

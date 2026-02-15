@@ -6,3 +6,5 @@ Notas-*.md
 
 # Ignore volume data
 data/*
+
+node_modules

@@ -1,0 +1,21 @@
+{
+  "name": "tools-app",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/node": "^9.5.3",
+    "@fontsource/gajraj-one": "^5.2.8",
+    "@fontsource/inter": "^5.2.8",
+    "@tailwindcss/vite": "^4.1.18",
+    "astro": "^5.17.1",
+    "install": "^0.13.0",
+    "npm": "^11.10.0",
+    "tailwindcss": "^4.1.18"
+  }
+}

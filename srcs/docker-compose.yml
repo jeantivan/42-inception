@@ -39,6 +39,10 @@ services:
         condition: service_started
       adminer:
         condition: service_started
+      static_site:
+        condition: service_started
+
+
   mariadb:
     build:
       context: ./requirements/mariadb
@@ -70,6 +74,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 2
+      start_period: 30s
 
   wordpress:
     build:
@@ -191,6 +196,35 @@ services:
 
     ports:
       - "8080"
+
+    networks:
+      - inception_network
+
+  static_site:
+    build:
+      context: ./requirements/static_site
+      dockerfile: Dockerfile
+    container_name: static_site
+    hostname: static_site
+    restart: on-failure
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4321/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+    develop:
+      watch:
+        - path: ./requirements/static_site/tools/app/src
+          action: rebuild
+
+    environment:
+      - TZ=${TZ:-UTC}
+      - ALPINE_VERSION=${ALPINE_VERSION:-3.22}
+
+    ports:
+      - "4321:4321"
 
     networks:
       - inception_network
