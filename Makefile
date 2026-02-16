@@ -1,0 +1,80 @@
+COMPOSE_FILE = ./srcs/docker-compose.yml
+ENV_FILE = ./srcs/.env
+
+ifeq (,$(wildcard $(ENV_FILE)))
+$(error "$(ENV_FILE) not found. Please create the $(ENV_FILE) file with the necessary environment variables.")
+else
+include $(ENV_FILE)
+export $(shell sed 's/=.*//' $(ENV_FILE))
+endif
+
+
+REQUIRED_SECRETS = ./srcs/${DB_ROOT_PASSWORD_FILE} \
+				   ./srcs/${DB_PASSWORD_FILE} \
+				   ./srcs/${FTP_PASSWORD_FILE} \
+				   ./srcs/${WORDPRESS_ADMIN_PASSWORD_FILE} \
+				   ./srcs/${WORDPRESS_GUESS_PASSWORD_FILE}
+
+# Colors
+BOLD_PURPLE = \033[1;35m
+BOLD_CYAN = \033[1;36m
+BOLD_YELLOW = \033[1;33m
+NO_COLOR = \033[0m
+DEF_COLOR = \033[0;39m
+GRAY = \033[0;90m
+RED = \033[0;91m
+GREEN = \033[0;92m
+YELLOW = \033[0;93m
+BLUE = \033[0;94m
+MAGENTA = \033[0;95m
+CYAN = \033[0;96m
+WHITE = \033[0;97m
+BG_GREEN = \033[42;37m
+
+prepare_dirs:
+	@echo "${BOLD_CYAN}Preparing volume directories on $(VOLUME_DIR)${NO_COLOR}"
+	@mkdir -p $(VOLUME_DIR)
+	@echo "${GRAY}\t mkdir -p $(VOLUME_DIR)${NO_COLOR}"
+	@mkdir -p $(VOLUME_DIR)/mariadb
+	@echo "${GRAY}\t mkdir -p $(VOLUME_DIR)/mariadb${NO_COLOR}"
+	@mkdir -p $(VOLUME_DIR)/wordpress
+	@echo "${GRAY}\t mkdir -p $(VOLUME_DIR)/wordpress${NO_COLOR}"
+	@echo "${CYAN}Created $(VOLUME_DIR)/mariadb and $(VOLUME_DIR)/wordpress directories.${NO_COLOR}"
+
+check_files:
+	@echo "${BOLD_PURPLE}Checking for required secrets...${NO_COLOR}"
+	@for file in $(REQUIRED_SECRETS); do \
+		echo "${GRAY}\t Checking for $$file ...${NO_COLOR}"; \
+		if [ ! -f "$$file" ]; then \
+			echo "${RED}Error: Required secret file '$$file' is missing.${NO_COLOR}"; \
+			exit 1; \
+		fi; \
+	done
+	@echo "${GREEN}All required secret files are present.${NO_COLOR}"
+
+
+all: check_files prepare_dirs
+	docker compose -f $(COMPOSE_FILE) up -d --build
+
+up: all
+
+clean:
+	@echo "${BOLD_YELLOW}Stopping containers...${NO_COLOR}"
+	@docker compose -f $(COMPOSE_FILE) stop
+	@echo "${GREEN}All containers stopped.${NO_COLOR}"
+
+down: clean
+	@echo "${BOLD_YELLOW}Stopping and removing containers, networks, and volumes...${NO_COLOR}"
+	@docker compose -f $(COMPOSE_FILE) down -v --remove-orphans
+	@echo "${GREEN}All containers, networks, and volumes have been removed.${NO_COLOR}"
+
+
+fclean: down
+	@echo "${BOLD_YELLOW}Removing all volumes...${NO_COLOR}"
+	@docker volume prune -f
+	@sudo rm -rf $(VOLUME_DIR)
+	@echo "${GREEN}All volumes have been removed.${NO_COLOR}"
+
+re: fclean up
+
+.PHONY: all up clean down fclean re prepare_dirs
