@@ -31,6 +31,8 @@ CYAN = \033[0;96m
 WHITE = \033[0;97m
 BG_GREEN = \033[42;37m
 
+all: up
+
 prepare_dirs:
 	@echo "${BOLD_CYAN}Preparing volume directories on $(VOLUME_DIR)${NO_COLOR}"
 	@mkdir -p $(VOLUME_DIR)
@@ -52,11 +54,8 @@ check_files:
 	done
 	@echo "${GREEN}All required secret files are present.${NO_COLOR}"
 
-
-all: check_files prepare_dirs
+up: check_files prepare_dirs
 	docker compose -f $(COMPOSE_FILE) up -d --build
-
-up: all
 
 clean:
 	@echo "${BOLD_YELLOW}Stopping containers...${NO_COLOR}"
@@ -68,7 +67,6 @@ down: clean
 	@docker compose -f $(COMPOSE_FILE) down -v --remove-orphans
 	@echo "${GREEN}All containers, networks, and volumes have been removed.${NO_COLOR}"
 
-
 fclean: down
 	@echo "${BOLD_YELLOW}Removing all volumes...${NO_COLOR}"
 	@docker volume prune -f
@@ -77,4 +75,7 @@ fclean: down
 
 re: fclean up
 
-.PHONY: all up clean down fclean re prepare_dirs
+logs:
+	docker compose -f $(COMPOSE_FILE) logs $(ARGS)
+
+.PHONY: all up clean down fclean re prepare_dirs logs
