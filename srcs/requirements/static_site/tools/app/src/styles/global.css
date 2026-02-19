@@ -41,3 +41,12 @@ body {
 	transform: scale(20) rotate(-45deg);
 	opacity: 1;
 }
+
+.title .title-letter {
+	transition: color 0.3s ease;
+	transition-delay: calc(sibling-index() * 0.05s);
+}
+
+.title:hover .title-letter {
+	color: #22c55e;
+}

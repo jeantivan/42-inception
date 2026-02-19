@@ -3,8 +3,10 @@ import "@fontsource/gajraj-one";
 import "@fontsource/inter";
 import "../styles/global.css";
 
+import Title from "../components/Title.astro";
+
 const { title } = Astro.props;
-const base = import.meta.env.BASE_URL || "/docs/";
+const base = import.meta.env.BASE_URL || "/docs";
 ---
 
 <!doctype html>
@@ -19,7 +21,7 @@ const base = import.meta.env.BASE_URL || "/docs/";
   </head>
   <body class="flex flex-col min-h-screen">
     <nav class="mx-4 flex items-center justify-between p-4">
-      <a class="font-display text-2xl font-bold" href={base}>Inception</a>
+      <Title title="Inception" />
       <div class="">
         <a href="https://profile-v3.intra.42.fr/users/jtivan-r">jtivan-r</a>
       </div>
