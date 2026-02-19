@@ -8,8 +8,8 @@ WORDPRESS_DB_USER=${WORDPRESS_DB_USER}
 WORDPRESS_DB_HOST=${WORDPRESS_DB_HOST}
 WORDPRESS_DB_NAME=${WORDPRESS_DB_NAME}
 WORDPRESS_DB_PASSWORD=$(cat /run/secrets/db_password)
-WORDPRESS_GUESS_USER=${WORDPRESS_GUESS_USER}
-WORDPRESS_GUESS_PASSWORD=$(cat /run/secrets/wordpress_guess_password)
+WORDPRESS_GUEST_USER=${WORDPRESS_GUEST_USER}
+WORDPRESS_GUEST_PASSWORD=$(cat /run/secrets/wordpress_guest_password)
 
 
 echo "[Entrypoint] Starting WordPress entrypoint script..."
@@ -61,15 +61,15 @@ EOL
 	fi
 }
 
-create_guess_user() {
-	if ! wp user get $WORDPRESS_GUESS_USER --path=$WORDPRESS_DIR --allow-root > /dev/null 2>&1; then
-		echo "[Entrypoint] Creating guess user '$WORDPRESS_GUESS_USER'..."
-		wp user create $WORDPRESS_GUESS_USER $WORDPRESS_GUESS_EMAIL \
-			--user_pass=$WORDPRESS_GUESS_PASSWORD \
+create_guest_user() {
+	if ! wp user get $WORDPRESS_GUEST_USER --path=$WORDPRESS_DIR --allow-root > /dev/null 2>&1; then
+		echo "[Entrypoint] Creating GUEST user '$WORDPRESS_GUEST_USER'..."
+		wp user create $WORDPRESS_GUEST_USER $WORDPRESS_GUEST_EMAIL \
+			--user_pass=$WORDPRESS_GUEST_PASSWORD \
 			--role=subscriber \
 			--path=$WORDPRESS_DIR --allow-root
 	else
-		echo "[Entrypoint] Guess user '$WORDPRESS_GUESS_USER' already exists, skipping creation..."
+		echo "[Entrypoint] Guest user '$WORDPRESS_GUEST_USER' already exists, skipping creation..."
 	fi
 }
 
@@ -110,7 +110,7 @@ main () {
 	download_wordpress
 	config_wordpress
 	install_wordpress
-	create_guess_user
+	create_guest_user
 	setup_redis
 	activate_debug_mode
 
