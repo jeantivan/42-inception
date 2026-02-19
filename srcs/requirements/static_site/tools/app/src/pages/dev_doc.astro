@@ -1,10 +1,17 @@
 ---
 import Layout from "../layouts/Layout.astro";
+
+import { Content as DevDocContent } from "../content/DEV_DOC.md";
 ---
 
 <Layout title="DEV_DOC.md">
-  <div class="flex items-center justify-center h-screen">
-    <h1 class="text-6xl mb-4">DEV_DOC.md</h1>
-    <p class="text-xl">This is the DEV_DOC.md page.</p>
-  </div></Layout
->
+  <div class="mx-auto my-12">
+    <h1 class="text-8xl font-display mb-4">DEV_DOC.md</h1>
+
+    <div
+      class="prose prose-lg prose-slate container p-6 bg-gray-50 rounded-lg shadow-md"
+    >
+      <DevDocContent />
+    </div>
+  </div>
+</Layout>

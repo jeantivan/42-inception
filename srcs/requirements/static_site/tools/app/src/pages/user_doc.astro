@@ -1,10 +1,17 @@
 ---
 import Layout from "../layouts/Layout.astro";
+
+import { Content as UserDocContent } from "../content/USER_DOC.md";
 ---
 
 <Layout title="USER_DOC.md">
-  <div class="grid items-center justify-center h-screen">
-    <h1 class="text-6xl mb-4">USER_DOC.md</h1>
-    <p class="text-xl">This is the USER_DOC.md page.</p>
+  <div class="mx-auto my-12">
+    <h1 class="text-8xl font-display mb-4">USER_DOC.md</h1>
+
+    <div
+      class="prose prose-lg prose-slate container p-6 bg-gray-50 rounded-lg shadow-md"
+    >
+      <UserDocContent />
+    </div>
   </div>
 </Layout>
