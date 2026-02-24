@@ -36,7 +36,7 @@ services:
       mariadb:
         condition: service_healthy
       wordpress:
-        condition: service_started
+        condition: service_healthy
       adminer:
         condition: service_started
       static_site:
@@ -99,16 +99,16 @@ services:
       - WORDPRESS_ADMIN_EMAIL=${WORDPRESS_ADMIN_EMAIL}
       - WORDPRESS_ADMIN_PASSWORD_FILE=${WORDPRESS_ADMIN_PASSWORD_FILE}
       - WORDPRESS_SITE_TITLE=${WORDPRESS_SITE_TITLE}
-      - WORDPRESS_GUESS_USER=${WORDPRESS_GUESS_USER}
-      - WORDPRESS_GUESS_EMAIL=${WORDPRESS_GUESS_EMAIL}
-      - WORDPRESS_GUESS_PASSWORD_FILE=${WORDPRESS_GUESS_PASSWORD_FILE}
+      - WORDPRESS_GUEST_USER=${WORDPRESS_GUEST_USER}
+      - WORDPRESS_GUEST_EMAIL=${WORDPRESS_GUEST_EMAIL}
+      - WORDPRESS_GUEST_PASSWORD_FILE=${WORDPRESS_GUEST_PASSWORD_FILE}
       - TZ=${TZ:-UTC}
       - DEV_MODE=${DEV_MODE:-true}
 
     secrets:
       - db_password
       - wordpress_admin_password
-      - wordpress_guess_password
+      - wordpress_guest_password
 
     ports:
       - "9000"
@@ -124,7 +124,7 @@ services:
 
   ftp:
     build:
-      context: ./requirements/ftp
+      context: ./requirements/bonus/ftp
       dockerfile: Dockerfile
     container_name: ftp
     hostname: ftp
@@ -158,7 +158,7 @@ services:
 
   redis:
     build:
-      context: ./requirements/redis
+      context: ./requirements/bonus/redis
       dockerfile: Dockerfile
     container_name: redis
     hostname: redis
@@ -175,7 +175,7 @@ services:
 
   adminer:
     build:
-      context: ./requirements/adminer
+      context: ./requirements/bonus/adminer
       dockerfile: Dockerfile
     container_name: adminer
     hostname: adminer
@@ -202,7 +202,7 @@ services:
 
   static_site:
     build:
-      context: ./requirements/static_site
+      context: ./requirements/bonus/static_site
       dockerfile: Dockerfile
     container_name: static_site
     hostname: static_site
@@ -245,15 +245,15 @@ volumes:
 
 secrets:
   db_root_password:
-    file: ${DB_ROOT_PASSWORD_FILE}
+    file: ./${DB_ROOT_PASSWORD_FILE}
   db_password:
-    file: ${DB_PASSWORD_FILE}
+    file: ./${DB_PASSWORD_FILE}
   wordpress_admin_password:
-    file: ${WORDPRESS_ADMIN_PASSWORD_FILE}
-  wordpress_guess_password:
-    file: ${WORDPRESS_GUESS_PASSWORD_FILE}
+    file: ./${WORDPRESS_ADMIN_PASSWORD_FILE}
+  wordpress_guest_password:
+    file: ./${WORDPRESS_GUEST_PASSWORD_FILE}
   ftp_password:
-    file: ${FTP_PASSWORD_FILE}
+    file: ./${FTP_PASSWORD_FILE}
 
 # Redes
 networks:
