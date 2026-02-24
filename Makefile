@@ -1,19 +1,21 @@
 COMPOSE_FILE = ./srcs/docker-compose.yml
 ENV_FILE = ./srcs/.env
 
+# Check if the .env file exists
 ifeq (,$(wildcard $(ENV_FILE)))
 $(error "$(ENV_FILE) not found. Please create the $(ENV_FILE) file with the necessary environment variables.")
-else
-include $(ENV_FILE)
-export $(shell sed 's/=.*//' $(ENV_FILE))
 endif
 
+VOLUME_DIR = /home/${USER}/data
 
-REQUIRED_SECRETS = ./srcs/${DB_ROOT_PASSWORD_FILE} \
-				   ./srcs/${DB_PASSWORD_FILE} \
-				   ./srcs/${FTP_PASSWORD_FILE} \
-				   ./srcs/${WORDPRESS_ADMIN_PASSWORD_FILE} \
-				   ./srcs/${WORDPRESS_GUESS_PASSWORD_FILE}
+SECRET_DIR= ./secrets/
+
+# Necessaries secrets files
+REQUIRED_SECRETS = $(SECRET_DIR)db_root_password.txt \
+				   $(SECRET_DIR)db_password.txt \
+				   $(SECRET_DIR)wordpress_admin_password.txt \
+				   $(SECRET_DIR)wordpress_guest_password.txt \
+				   $(SECRET_DIR)ftp_password.txt
 
 # Colors
 BOLD_PURPLE = \033[1;35m
@@ -30,6 +32,7 @@ MAGENTA = \033[0;95m
 CYAN = \033[0;96m
 WHITE = \033[0;97m
 BG_GREEN = \033[42;37m
+
 
 all: up
 
@@ -55,7 +58,8 @@ check_files:
 	@echo "${GREEN}All required secret files are present.${NO_COLOR}"
 
 up: check_files prepare_dirs
-	docker compose -f $(COMPOSE_FILE) up -d --build
+	docker compose -f $(COMPOSE_FILE) build --no-cache
+	docker compose -f $(COMPOSE_FILE) up -d --remove-orphans
 
 clean:
 	@echo "${BOLD_YELLOW}Stopping containers...${NO_COLOR}"
