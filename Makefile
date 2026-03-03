@@ -7,6 +7,7 @@ $(error "$(ENV_FILE) not found. Please create the $(ENV_FILE) file with the nece
 endif
 
 VOLUME_DIR = /home/${USER}/data
+DOMAIN=jtivan-r.42.fr
 
 SECRET_DIR= ./secrets/
 
@@ -57,7 +58,17 @@ check_files:
 	done
 	@echo "${GREEN}All required secret files are present.${NO_COLOR}"
 
-up: check_files prepare_dirs
+check_host:
+	@echo "Checking if $(DOMAIN) exists in /etc/hosts"
+	@if grep -wq "$(DOMAIN)" "/etc/hosts"; then \
+	    echo "✔ $(DOMAIN) already exists in hosts file"; \
+	else \
+	    echo "Adding entry..."; \
+	    echo "127.0.0.1\t$(DOMAIN)" | sudo tee -a "/etc/hosts" > /dev/null; \
+	    echo "Done."; \
+	fi
+
+up: check_files check_host prepare_dirs
 	docker compose -f $(COMPOSE_FILE) build --no-cache
 	docker compose -f $(COMPOSE_FILE) up -d --remove-orphans
 
