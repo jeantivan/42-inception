@@ -14,7 +14,6 @@ endif
 # routing or volume mounting will not work as expected.
 # ==============================================================================
 
-
 VOLUME_DIR = /home/${USER}/data
 DOMAIN=jtivan-r.42.fr
 
@@ -23,10 +22,10 @@ SECRET_DIR= ./secrets/
 # Necessaries secrets files
 # Ensure these filenames match the paths in your .env file
 REQUIRED_SECRETS = $(SECRET_DIR)db_root_password.txt \
-				   $(SECRET_DIR)db_password.txt \
-				   $(SECRET_DIR)wordpress_admin_password.txt \
-				   $(SECRET_DIR)wordpress_guest_password.txt \
-				   $(SECRET_DIR)ftp_password.txt
+                   $(SECRET_DIR)db_password.txt \
+                   $(SECRET_DIR)wordpress_admin_password.txt \
+                   $(SECRET_DIR)wordpress_guest_password.txt \
+                   $(SECRET_DIR)ftp_password.txt
 
 # Colors
 BOLD_PURPLE = \033[1;35m
@@ -48,34 +47,34 @@ BG_GREEN = \033[42;37m
 all: up
 
 prepare_dirs:
-	@echo "${BOLD_CYAN}Preparing volume directories on $(VOLUME_DIR)${NO_COLOR}"
+	@echo -e "${BOLD_CYAN}Preparing volume directories on $(VOLUME_DIR)${NO_COLOR}"
 	@mkdir -p $(VOLUME_DIR)
-	@echo "${GRAY}\t mkdir -p $(VOLUME_DIR)${NO_COLOR}"
+	@echo -e "${GRAY}\t mkdir -p $(VOLUME_DIR)${NO_COLOR}"
 	@mkdir -p $(VOLUME_DIR)/mariadb
-	@echo "${GRAY}\t mkdir -p $(VOLUME_DIR)/mariadb${NO_COLOR}"
+	@echo -e "${GRAY}\t mkdir -p $(VOLUME_DIR)/mariadb${NO_COLOR}"
 	@mkdir -p $(VOLUME_DIR)/wordpress
-	@echo "${GRAY}\t mkdir -p $(VOLUME_DIR)/wordpress${NO_COLOR}"
-	@echo "${CYAN}Created $(VOLUME_DIR)/mariadb and $(VOLUME_DIR)/wordpress directories.${NO_COLOR}"
+	@echo -e "${GRAY}\t mkdir -p $(VOLUME_DIR)/wordpress${NO_COLOR}"
+	@echo -e "${CYAN}Created $(VOLUME_DIR)/mariadb and $(VOLUME_DIR)/wordpress directories.${NO_COLOR}"
 
 check_files:
-	@echo "${BOLD_PURPLE}Checking for required secrets...${NO_COLOR}"
+	@echo -e "${BOLD_PURPLE}Checking for required secrets...${NO_COLOR}"
 	@for file in $(REQUIRED_SECRETS); do \
-		echo "${GRAY}\t Checking for $$file ...${NO_COLOR}"; \
+		echo -e "${GRAY}\t Checking for $$file ...${NO_COLOR}"; \
 		if [ ! -f "$$file" ]; then \
-			echo "${RED}Error: Required secret file '$$file' is missing.${NO_COLOR}"; \
+			echo -e "${RED}Error: Required secret file '$$file' is missing.${NO_COLOR}"; \
 			exit 1; \
 		fi; \
 	done
-	@echo "${GREEN}All required secret files are present.${NO_COLOR}"
+	@echo -e "${GREEN}All required secret files are present.${NO_COLOR}"
 
 check_host:
-	@echo "Checking if $(DOMAIN) exists in /etc/hosts"
+	@echo -e "Checking if $(DOMAIN) exists in /etc/hosts"
 	@if grep -wq "$(DOMAIN)" "/etc/hosts"; then \
-	    echo "✔ $(DOMAIN) already exists in hosts file"; \
+		echo -e "✔ $(DOMAIN) already exists in hosts file"; \
 	else \
-	    echo "Adding entry..."; \
-	    echo "127.0.0.1\t$(DOMAIN)" | sudo tee -a "/etc/hosts" > /dev/null; \
-	    echo "Done."; \
+		echo -e "Adding entry..."; \
+		echo -e "127.0.0.1\t$(DOMAIN)" | sudo tee -a "/etc/hosts" > /dev/null; \
+		echo -e "Done."; \
 	fi
 
 up: check_files check_host prepare_dirs
@@ -83,20 +82,20 @@ up: check_files check_host prepare_dirs
 	docker compose -f $(COMPOSE_FILE) up -d --remove-orphans
 
 clean:
-	@echo "${BOLD_YELLOW}Stopping containers...${NO_COLOR}"
+	@echo -e "${BOLD_YELLOW}Stopping containers...${NO_COLOR}"
 	@docker compose -f $(COMPOSE_FILE) stop
-	@echo "${GREEN}All containers stopped.${NO_COLOR}"
+	@echo -e "${GREEN}All containers stopped.${NO_COLOR}"
 
 down: clean
-	@echo "${BOLD_YELLOW}Stopping and removing containers, networks, and volumes...${NO_COLOR}"
+	@echo -e "${BOLD_YELLOW}Stopping and removing containers, networks, and volumes...${NO_COLOR}"
 	@docker compose -f $(COMPOSE_FILE) down -v --remove-orphans
-	@echo "${GREEN}All containers, networks, and volumes have been removed.${NO_COLOR}"
+	@echo -e "${GREEN}All containers, networks, and volumes have been removed.${NO_COLOR}"
 
 fclean: down
-	@echo "${BOLD_YELLOW}Removing all volumes...${NO_COLOR}"
+	@echo -e "${BOLD_YELLOW}Removing all volumes...${NO_COLOR}"
 	@docker volume prune -f
 	@sudo rm -rf $(VOLUME_DIR)
-	@echo "${GREEN}All volumes have been removed.${NO_COLOR}"
+	@echo -e "${GREEN}All volumes have been removed.${NO_COLOR}"
 
 re: fclean up
 
