@@ -1,6 +1,6 @@
 # Stage 1
 ARG ALPINE_VERSION=${ALPINE_VERSION:-3.22}
-FROM alpine:${ALPINE_VERSION} AS builder
+FROM alpine:${ALPINE_VERSION}
 
 RUN apk add --no-cache \
 	nginx \
@@ -10,7 +10,6 @@ RUN apk add --no-cache \
 	curl \
 	bash \
 	&& update-ca-certificates
-# && update-ca-certificates
 
 RUN mkdir -p /var/log/nginx \
 	/etc/nginx/conf.d \
