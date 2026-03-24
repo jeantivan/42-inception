@@ -93,6 +93,8 @@ down: clean
 
 fclean: down
 	@echo -e "${BOLD_YELLOW}Removing all volumes...${NO_COLOR}"
+	@docker image prune -a -f
+	@docker network -f
 	@docker volume prune -f
 	@sudo rm -rf $(VOLUME_DIR)
 	@echo -e "${GREEN}All volumes have been removed.${NO_COLOR}"
