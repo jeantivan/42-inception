@@ -23,7 +23,6 @@ KEY_FILE="${CERT_DIR}/${DOMAIN}.key"
 show_env() {
     echo "📋 Configuración del entorno:"
     echo "   DOMAIN_NAME: ${DOMAIN}"
-    echo "   DEV_MODE: ${DEV_MODE:-false}"
     echo "   TZ: ${TZ:-UTC}"
     echo ""
 }
@@ -110,11 +109,9 @@ setup_certificates() {
     if [ ! -f "$CERT_FILE" ] || [ ! -f "$KEY_FILE" ]; then
         echo "   ⚠️  Certificados no encontrados"
         NEED_CERTS=true
-    elif [ "$DEV_MODE" = "true" ]; then
-        if ! openssl x509 -checkend 0 -noout -in "$CERT_FILE" 2>/dev/null; then
-            echo "   ⚠️  Certificados expirados"
-            NEED_CERTS=true
-        fi
+    elif ! openssl x509 -checkend 0 -noout -in "$CERT_FILE" 2>/dev/null;; then
+        echo "   ⚠️  Certificados expirados"
+        NEED_CERTS=true
     fi
 
     if [ "$NEED_CERTS" = "true" ]; then

@@ -12,7 +12,6 @@ services:
 
     environment:
       - DOMAIN_NAME=${DOMAIN_NAME:-localhost}
-      - DEV_MODE=${DEV_MODE:-true}
       - TZ=${TZ:-UTC}
       - NGINX_VERSION=${NGINX_VERSION:-1.29.4}
 
@@ -102,7 +101,6 @@ services:
       - WORDPRESS_GUEST_EMAIL=${WORDPRESS_GUEST_EMAIL}
       - WORDPRESS_GUEST_PASSWORD_FILE=${WORDPRESS_GUEST_PASSWORD_FILE}
       - TZ=${TZ:-UTC}
-      - DEV_MODE=${DEV_MODE:-true}
 
     secrets:
       - db_password

@@ -96,23 +96,12 @@ setup_redis() {
 	echo "[Entrypoint] Redis configured successfully."
 }
 
-activate_debug_mode() {
-	if [ "$DEV_MODE" = "true" ]; then
-		echo "[Entrypoint] Development mode enabled. Activating WordPress debug mode..."
-		wp config set WP_DEBUG true --raw --path=$WORDPRESS_DIR --allow-root
-		wp config set WP_DEBUG_LOG true --raw --path=$WORDPRESS_DIR --allow-root
-		wp config set WP_DEBUG_DISPLAY false --raw --path=$WORDPRESS_DIR --allow-root
-		echo "[Entrypoint] WordPress debug mode activated."
-	fi
-}
-
 main () {
 	download_wordpress
 	config_wordpress
 	install_wordpress
 	create_guest_user
 	setup_redis
-	activate_debug_mode
 
 	echo "[Entrypoint] WordPress setup completed successfully. Starting the server..."
 	exec "$@"
