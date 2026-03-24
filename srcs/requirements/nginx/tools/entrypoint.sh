@@ -164,7 +164,6 @@ show_info() {
 # MAIN
 # ============================================
 main() {
-    show_env
     setup_timezone
     setup_directories
     process_config
