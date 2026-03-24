@@ -1,4 +1,4 @@
-*This project has been created as part of the 42 curriculum by \<login\>.*
+*This project has been created as part of the 42 curriculum by jtivan-r.*
 
 # Inception - Developer Documentation
 
@@ -6,7 +6,7 @@ This document provides technical guidelines for developers on how to set up, bui
 
 ## 1. Setting Up the Environment from Scratch
 
-[cite_start]Before launching the project, the environment must be properly configured with the necessary prerequisites, configuration files, and secrets[cite: 519].
+Before launching the project, the environment must be properly configured with the necessary prerequisites, configuration files, and secrets.
 
 ### Prerequisites
 * **Docker & Docker Compose**: Ensure you have the latest versions installed on your host machine or Virtual Machine.
@@ -26,14 +26,14 @@ For security reasons, passwords are not stored in the `.env` file or hardcoded i
 
 ## 2. Building and Launching the Project
 
-[cite_start]The project relies on a `Makefile` to orchestrate the build process using Docker Compose[cite: 520]. The compose file is located at `./srcs/docker-compose.yml`.
+The project relies on a `Makefile` to orchestrate the build process using Docker Compose. The compose file is located at `./srcs/docker-compose.yml`.
 
 * **Initialization**: Run `make` or `make up`. This command executes a sequence of checks (`check_files`, `check_host`, `prepare_dirs`), builds the Docker images from scratch (`--no-cache`), and brings up the containers in detached mode (`-d`).
 * **Under the Hood**: The `Makefile` ensures that the data directories are created on the host before Docker attempts to bind them, preventing permission issues.
 
 ## 3. Managing Containers and Volumes
 
-[cite_start]You can manage the lifecycle of the infrastructure using the following `Makefile` rules and Docker commands[cite: 521]:
+You can manage the lifecycle of the infrastructure using the following `Makefile` rules and Docker commands:
 
 * **`make clean`**: Gracefully stops all running containers defined in the compose file without destroying them.
 * **`make down`**: Stops and removes all containers, networks, and named volumes associated with the project (`docker compose down -v`). Use this for a complete reset.
@@ -44,10 +44,34 @@ For security reasons, passwords are not stored in the `.env` file or hardcoded i
 
 ## 4. Data Storage and Persistence
 
-[cite_start]To ensure that data survives container restarts or removals, the project utilizes Docker named volumes[cite: 522].
+To ensure that data survives container restarts or removals, the project utilizes Docker named volumes[cite: 522].
 
 * **Host Location**: According to the `Makefile`, the persistent data is physically stored on the host machine at `/home/${USER}/data`.
 * **Volumes Used**:
   1. **Database Volume**: Stores the MariaDB data files, ensuring all WordPress posts, users, and configurations persist.
   2. **Web Files Volume**: Stores the downloaded WordPress core files and user uploads, shared between the WordPress and NGINX (if needed) or FTP containers.
 * **Persistence Mechanism**: Even if you run `make clean`, the data remains intact in the `VOLUME_DIR`. The data is only wiped if you explicitly remove the volumes (e.g., via `make down` which uses the `-v` flag, or `make fclean`).
+
+## 5. Bonus Architecture and Services
+
+The project includes an extended architecture with four additional containers, fully integrated into the `inception_network`.
+
+### FTP Service (`ftp`)
+* **Purpose**: Allows direct file manipulation of the WordPress webroot.
+* **Configuration**: It binds directly to the `wordpress_data` volume.
+* **Networking**: Exposes port `21` for the command channel and the port range `30000-30009` for passive data connections.
+* **Security**: Authentication relies on the `ftp_password` Docker secret. It waits for the `wordpress` container to start before initializing.
+
+### Redis Cache (`redis`)
+* **Purpose**: In-memory data structure store used as a database cache to optimize WordPress performance.
+* **Dependencies**: The `wordpress` service has a strict dependency on Redis; it will not initialize until the Redis container passes its healthcheck using `redis-cli ping`.
+
+### Adminer (`adminer`)
+* **Purpose**: A lightweight, single-file PHP database management tool.
+* **Networking**: The service is exposed on port `8080`.
+* **Dependencies**: It requires the `mariadb` container to be healthy before starting. Furthermore, the main `nginx` entry point waits for Adminer to start.
+
+### Static Site (`static_site`)
+* **Purpose**: Serves a completely independent, non-PHP static website.
+* **Networking**: Exposed on port `4321`. NGINX is configured to wait for this service to start.
+* **Development Feature**: Utilizes Docker Compose's `watch` functionality. Any changes made by a developer in `./requirements/static_site/tools/app/src` will trigger an automatic rebuild of the container, streamlining the development workflow.
