@@ -6,12 +6,22 @@ ifeq (,$(wildcard $(ENV_FILE)))
 $(error "$(ENV_FILE) not found. Please create the $(ENV_FILE) file with the necessary environment variables.")
 endif
 
+# ==============================================================================
+# ⚠️ IMPORTANT CONFIGURATION WARNING ⚠️
+# The following variables (VOLUME_DIR, DOMAIN, and the secret files) MUST exactly
+# match the values you have defined in your ./srcs/.env file.
+# If they differ, the Makefile checks will pass/fail incorrectly and the host
+# routing or volume mounting will not work as expected.
+# ==============================================================================
+
+
 VOLUME_DIR = /home/${USER}/data
 DOMAIN=jtivan-r.42.fr
 
 SECRET_DIR= ./secrets/
 
 # Necessaries secrets files
+# Ensure these filenames match the paths in your .env file
 REQUIRED_SECRETS = $(SECRET_DIR)db_root_password.txt \
 				   $(SECRET_DIR)db_password.txt \
 				   $(SECRET_DIR)wordpress_admin_password.txt \
