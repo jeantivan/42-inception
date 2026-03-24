@@ -16,7 +16,7 @@ services:
       - NGINX_VERSION=${NGINX_VERSION:-1.29.4}
 
     ports:
-      - "${HTTPS_PORT:-443}:443"
+      - "443:443"
 
     networks:
       - inception_network
