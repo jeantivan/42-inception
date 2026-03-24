@@ -4,9 +4,9 @@ set -e
 
 TIMEOUT=3
 
-HEALTH_URL="http://localhost/health"
+HEALTH_URL="https://localhost/healthz"
 
-if timeout "$TIMEOUT" curl -f -s "$HEALTH_URL" > /dev/null 2>&1; then
+if timeout "$TIMEOUT" curl -f -s -k "$HEALTH_URL" > /dev/null 2>&1; then
 	echo "✅ Nginx is healthy and responding at $HEALTH_URL"
 	exit 0
 else
