@@ -14,9 +14,8 @@ RUN apk add --no-cache \
 WORKDIR /tmp
 
 # Download WP-CLI
-RUN curl -L https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
-    chmod +x wp-cli.phar && \
-    mv wp-cli.phar /usr/local/bin/wp
+RUN curl -L https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -o /usr/local/bin/wp && \
+    chmod +x /usr/local/bin/wp
 
 # Memory limit for PHP
 RUN echo "memory_limit = 256M" > /etc/php83/conf.d/memory.ini && \
