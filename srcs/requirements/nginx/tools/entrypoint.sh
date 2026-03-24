@@ -88,9 +88,6 @@ process_config() {
         sed "s/\${DOMAIN_NAME}/${DOMAIN}/g" "${CONFIG_DEST}.backup" > "$CONFIG_DEST"
         # Limpiar backup
         rm -f "${CONFIG_DEST}.backup"
-    else
-        echo "   ⚠️  Creando configuración por defecto"
-        create_default_config
     fi
 
     echo "   ✅ Configuración procesada"
@@ -109,7 +106,7 @@ setup_certificates() {
     if [ ! -f "$CERT_FILE" ] || [ ! -f "$KEY_FILE" ]; then
         echo "   ⚠️  Certificados no encontrados"
         NEED_CERTS=true
-    elif ! openssl x509 -checkend 0 -noout -in "$CERT_FILE" 2>/dev/null;; then
+    elif ! openssl x509 -checkend 0 -noout -in "$CERT_FILE" 2>/dev/null; then
         echo "   ⚠️  Certificados expirados"
         NEED_CERTS=true
     fi
@@ -174,9 +171,8 @@ show_info() {
     echo "   OpenSSL: $(openssl version | cut -d' ' -f2)"
     echo ""
     echo "📍 Endpoints disponibles:"
-    echo "   HTTP:  http://$DOMAIN (puerto 80, redirige a HTTPS)"
     echo "   HTTPS: https://$DOMAIN (puerto 443)"
-    echo "   Health: https://$DOMAIN/health"
+    echo "   Health: https://$DOMAIN/healthz"
     echo ""
     echo "🔐 Certificados SSL:"
     echo "   Ubicación: $CERT_DIR"
