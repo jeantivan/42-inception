@@ -41,10 +41,8 @@ RUN apk add --no-cache curl
 
 RUN addgroup -S astroup && adduser -S astrouser -G astroup
 
-COPY --from=prod-deps /app/node_modules ./node_modules
-COPY --from=build /app/dist ./dist
-
-RUN chown -R astrouser:astroup /app
+COPY --chown=astrouser:astroup --from=prod-deps /app/node_modules ./node_modules
+COPY --chown=astrouser:astroup --from=build /app/dist ./dist
 
 ENV HOST=0.0.0.0
 ENV PORT=4321
