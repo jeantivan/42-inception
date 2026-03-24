@@ -1,11 +1,28 @@
-*This project has been created as part of the 42 curriculum by \<login\>.*
+*This project has been created as part of the 42 curriculum by jtivan-r.*
 
 # Inception
 
 ## Table of Content
 
-TO_DO
+  * [Description](#description)
+  * [Virtual Machines vs Docker](#virtual-machines-vs-docker)
+  * [Secrets vs Environment Variables](#secrets-vs-environment-variables)
+  * [Docker Network vs Host Network](#docker-network-vs-host-network)
+  * [Docker Volumes vs Bind Mounts](#docker-volumes-vs-bind-mounts)
+  * [Instructions](#instructions)
+    - [Prerequisites](#prerequisites)
+    - [Step 1: Configure Environment Variables](#step-1-configure-environment-variables)
+    - [Step 2: Create secrets](#step-2-create-the-secrets)
+    - [Step 3: Build and run](#step-3-build-and-run)
+    - [Step 4: Access the site](#step-4-access-the-site)
+  * [Bonus Services](#bonus-services)
+  * [Resources](#resources)
+    - [Official Documentation](#official-documentation)
+    - [Tutorial & Articles](#tutorials--articles)
+  * [AI Usage Disclosure](#ai-usage-disclosure)
 
+
+---
 ## Description
 
 Inception is a system administration project that deepens your understanding of Docker and containerization by building a small but complete web infrastructure from scratch. Rather than pulling pre-built images, you write your own Dockerfiles for each service and orchestrate them with Docker Compose — all running inside a personal virtual machine.
@@ -66,9 +83,8 @@ Before running the project, make sure the following are available on your system
 - **Internet connection** (needed during the first build to download base images and packages)
 - **Port 443 free** — NGINX is the sole entry point and binds exclusively to port 443. If something else is already listening on that port, the stack will fail to start. Running the project inside a dedicated VM is strongly recommended to avoid conflicts.
 
----
 
-### Step 1 — Configure environment variables
+### Step 1: Configure environment variables
 
 Copy the provided example file and fill in your values:
 
@@ -80,9 +96,8 @@ Open `srcs/.env` and set every variable. The file is self-documented — each va
 
 > ⚠️ Never commit `.env` to your repository. It is listed in `.gitignore` by default.
 
----
 
-### Step 2 — Create the secrets
+### Step 2: Create the secrets
 
 Sensitive credentials are never stored in environment variables or Dockerfiles. Instead, they are read from plain-text files at runtime via Docker secrets.
 
@@ -106,9 +121,8 @@ Once the files are created, update the corresponding path variables in your `src
 
 > ⚠️ The `secrets/` directory must be added to `.gitignore`. Committing passwords to a repository will result in immediate project failure.
 
----
 
-### Step 3 — Build and run
+### Step 3: Build and run
 
 Once the environment file and secrets are in place, launch the entire infrastructure with a single command from the project root:
 
@@ -130,9 +144,8 @@ To perform a full teardown (containers, volumes, and built images):
 make fclean
 ```
 
----
 
-### Step 4 — Access the site
+### Step 4: Access the site
 
 Once the stack is running, open your browser and navigate to:
 
@@ -140,7 +153,7 @@ Once the stack is running, open your browser and navigate to:
 https://<your-login>.42.fr
 ```
 
-Because the TLS certificate is self-signed, your browser will show a security warning — this is expected. Accept the exception to proceed to the WordPress site.
+> Because the TLS certificate is self-signed, your browser will show a security warning — this is expected. Accept the exception to proceed to the WordPress site.
 
 The WordPress admin panel is available at:
 
@@ -148,7 +161,22 @@ The WordPress admin panel is available at:
 https://<your-login>.42.fr/wp-admin
 ```
 
-> Make sure your `/etc/hosts` file (or the VM's equivalent) maps `<your-login>.42.fr` to `127.0.0.1`. The Makefile handles this automatically if configured to do so.
+---
+---
+
+## Bonus Services
+
+In addition to the mandatory requirements, this project implements several bonus features to enhance performance, usability, and the development workflow. These services are fully integrated into the existing `inception_network`.
+
+- **Redis Cache (`redis`)** An in-memory data structure store configured as an object cache for WordPress. It significantly improves database query performance and page load times. The WordPress container is configured with a strict dependency and will only start once the Redis healthcheck (`redis-cli ping`) is successful.
+
+- **FTP Server (`ftp`)** A File Transfer Protocol server connected directly to the `wordpress_data` volume. It allows administrators to remotely upload, download, and manage the website's core files, themes, and plugins via port 21 (control) and ports 30000-30009 (passive data connections), using the secure credentials defined in your `secrets/` directory.
+
+- **Adminer (`adminer`)** A lightweight, full-featured database management tool contained in a single PHP file. It provides a clean Graphical User Interface (GUI) to easily inspect and manage the MariaDB database without needing to use the command line.
+  > **Access:** `http://<your-login>.42.fr/adminer`
+
+- **Static Website (`static_site`)** A standalone static webpage served as a production-ready Node.js application. It is built using a highly optimized multi-stage Dockerfile that compiles the assets and runs only the lightweight runtime environment. Following the strict network isolation rules, it is not exposed directly to the host; instead, NGINX acts as a reverse proxy to serve it securely over HTTPS.
+  > **Access:** `https://<your-login>.42.fr/docs/`
 
 ---
 
@@ -192,4 +220,4 @@ AI tools were used throughout this project to accelerate development and improve
 - **Development & Debugging** — GitHub Copilot assisted with boilerplate code generation, configuration syntax, and suggesting solutions for build and runtime errors.
 - **Documentation** — AI was used to draft, structure, and refine this README and related documentation files, ensuring clarity and completeness.
 
-All AI-generated content was carefully reviewed, tested, and adapted to the specific requirements of the project.
+> All AI-generated content was carefully reviewed, tested, and adapted to the specific requirements of the project.
