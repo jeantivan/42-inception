@@ -1,7 +1,7 @@
 ARG ALPINE_VERSION=${ALPINE_VERSION:-3.22}
 FROM alpine:${ALPINE_VERSION}
 
-RUN apk update && apk add --no-cache \
+RUN apk add --no-cache \
 	mariadb \
 	mariadb-client \
 	&& mkdir -p /run/mysqld \
