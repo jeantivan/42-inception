@@ -26,7 +26,7 @@ echo "[Entrypoint] Starting WordPress initialization..."
 # Function: Download WordPress
 # ==========================================
 download_wordpress() {
-	if [ ! -f "$WORDPRESS_DIR/wp-includes/version.php"]; then
+	if [ ! -f "$WORDPRESS_DIR/wp-includes/version.php" ]; then
 		echo "[Entrypoint] Downloading Wordpress core files..."
 		wp core download --path="$WORDPRESS_DIR" --allow-root --quiet
 	else
