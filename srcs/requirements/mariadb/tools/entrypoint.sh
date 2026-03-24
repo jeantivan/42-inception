@@ -25,9 +25,9 @@ if [ "$1" = "mariadbd" ]; then
 
 		mariadb-install-db --user=mysql --datadir="$DATADIR" --log-error=/dev/stderr --skip-test-db > /dev/null
 
-		mariadbd --user=mysql --datadir="$DATADIR" --skip-networking & pid="$!"
+		mariadbd --user=mysql --datadir="$DATADIR" --skip-networking > /dev/null 2>&1 & pid="$!"
 
-		until mariadb-admin --socket=/run/mysqld/mysqld.sock ping --silent; do
+		until mariadb-admin --socket=/run/mysqld/mysqld.sock ping >> /dev/null 2>&1; do
 			echo "Waiting for database server to start..."
 			sleep 1
 		done
@@ -35,7 +35,7 @@ if [ "$1" = "mariadbd" ]; then
 		echo "[Entrypoint] Database server started"
 
 		echo "[Entrypoint] Setting up users and database..."
-		mariadb <<-EOSQL
+		mariadb > /dev/null 2>&1 <<-EOSQL
 			ALTER USER 'root'@'localhost' IDENTIFIED BY '${MARIADB_ROOT_PASSWORD}';
 			DELETE FROM mysql.user WHERE User='';
 			DROP DATABASE IF EXISTS test;
@@ -48,7 +48,7 @@ if [ "$1" = "mariadbd" ]; then
 EOSQL
 
 		echo "[Entrypoint] Shutting down temporary database server..."
-		mariadb-admin shutdown -u root -p"${MARIADB_ROOT_PASSWORD}"
+		mariadb-admin shutdown -u root -p"${MARIADB_ROOT_PASSWORD}" > /dev/null 2>&1
 
 		wait "$pid"
 
