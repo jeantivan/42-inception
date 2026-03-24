@@ -1,7 +1,7 @@
 ARG ALPINE_VERSION=${ALPINE_VERSION:-3.22}
 FROM alpine:${ALPINE_VERSION} AS base
 
-RUN apk add --no-cache nodejs npm
+RUN apk add --no-cache nodejs npm curl
 
 WORKDIR /app
 
