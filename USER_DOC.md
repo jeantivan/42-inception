@@ -49,7 +49,7 @@ Administrators can verify that the infrastructure is healthy and running smoothl
 
 In addition to the core infrastructure, this project includes several extended functionalities that enhance usability and performance.
 
-* **Adminer (Database GUI)**: You can manage the MariaDB database through a user-friendly graphical interface. Access it by navigating to `http://<your-login>.42.fr/adminer` (or `http://localhost/adminer` depending on your host configuration).
-* **Static Website**: A standalone showcase website is available. You can visit it by navigating to `http://<your-login>.42.fr/docs` (or `http://localhost/docs`).
+* **Adminer (Database GUI)**: You can manage the MariaDB database through a user-friendly graphical interface. Access it by navigating to `http://<your-login>.42.fr/adminer` (or `http://localhost/adminer/` depending on your host configuration).
+* **Static Website**: A standalone showcase website running in a highly optimized production environment. You can securely visit it by navigating to `https://<your-login>.42.fr/docs/`.`).
 * **FTP Server**: Administrators can transfer and manage WordPress website files remotely via FTP. The server is accessible on port `21`. You will need the specific FTP credentials defined by the system administrator to log in.
 * **Redis Cache**: The infrastructure includes an in-memory caching system designed to significantly speed up the WordPress website. This service runs completely transparently in the background and requires no user interaction.

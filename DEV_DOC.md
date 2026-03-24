@@ -72,6 +72,6 @@ The project includes an extended architecture with four additional containers, f
 * **Dependencies**: It requires the `mariadb` container to be healthy before starting. Furthermore, the main `nginx` entry point waits for Adminer to start.
 
 ### Static Site (`static_site`)
-* **Purpose**: Serves a completely independent, non-PHP static website.
-* **Networking**: Exposed on port `4321`. NGINX is configured to wait for this service to start.
-* **Development Feature**: Utilizes Docker Compose's `watch` functionality. Any changes made by a developer in `./requirements/static_site/tools/app/src` will trigger an automatic rebuild of the container, streamlining the development workflow.
+* **Purpose**: Serves a completely independent, production-ready static website (e.g., built with Node.js/Astro).
+* **Architecture**: Utilizes a multi-stage `Dockerfile` to compile the source code and discard development dependencies, ensuring a minimal and secure final image.
+* **Networking**: The container runs internally on port `4321` but does **not** expose this port to the host to maintain strict network isolation. Instead, NGINX is configured as a reverse proxy to route traffic from `https://<domain>/docs/` directly to this container. NGINX is also configured to wait for this service to be healthy before starting.

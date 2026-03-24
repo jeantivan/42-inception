@@ -175,8 +175,8 @@ In addition to the mandatory requirements, this project implements several bonus
 - **Adminer (`adminer`)** A lightweight, full-featured database management tool contained in a single PHP file. It provides a clean Graphical User Interface (GUI) to easily inspect and manage the MariaDB database without needing to use the command line.
   > **Access:** `http://<your-login>.42.fr/adminer`
 
-- **Static Website (`static_site`)** A standalone static webpage running in its own isolated container. This service takes advantage of the Docker Compose `watch` feature: any changes made to the source code (`./requirements/static_site/tools/app/src`) will trigger an automatic rebuild of the container, providing a seamless hot-reload experience for developers.
-  > **Access:** `http://<your-login>.42.fr:4321`
+- **Static Website (`static_site`)** A standalone static webpage served as a production-ready Node.js application. It is built using a highly optimized multi-stage Dockerfile that compiles the assets and runs only the lightweight runtime environment. Following the strict network isolation rules, it is not exposed directly to the host; instead, NGINX acts as a reverse proxy to serve it securely over HTTPS.
+  > **Access:** `https://<your-login>.42.fr/docs/`
 
 ---
 
