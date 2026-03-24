@@ -15,6 +15,7 @@
     - [Step 2: Create secrets](#step-2-create-the-secrets)
     - [Step 3: Build and run](#step-3-build-and-run)
     - [Step 4: Access the site](#step-4-access-the-site)
+  * [Bonus Services](#bonus-services)
   * [Resources](#resources)
     - [Official Documentation](#official-documentation)
     - [Tutorial & Articles](#tutorials--articles)
@@ -159,6 +160,23 @@ The WordPress admin panel is available at:
 ```
 https://<your-login>.42.fr/wp-admin
 ```
+
+---
+---
+
+## Bonus Services
+
+In addition to the mandatory requirements, this project implements several bonus features to enhance performance, usability, and the development workflow. These services are fully integrated into the existing `inception_network`.
+
+- **Redis Cache (`redis`)** An in-memory data structure store configured as an object cache for WordPress. It significantly improves database query performance and page load times. The WordPress container is configured with a strict dependency and will only start once the Redis healthcheck (`redis-cli ping`) is successful.
+
+- **FTP Server (`ftp`)** A File Transfer Protocol server connected directly to the `wordpress_data` volume. It allows administrators to remotely upload, download, and manage the website's core files, themes, and plugins via port 21 (control) and ports 30000-30009 (passive data connections), using the secure credentials defined in your `secrets/` directory.
+
+- **Adminer (`adminer`)** A lightweight, full-featured database management tool contained in a single PHP file. It provides a clean Graphical User Interface (GUI) to easily inspect and manage the MariaDB database without needing to use the command line.
+  > **Access:** `http://<your-login>.42.fr/adminer`
+
+- **Static Website (`static_site`)** A standalone static webpage running in its own isolated container. This service takes advantage of the Docker Compose `watch` feature: any changes made to the source code (`./requirements/static_site/tools/app/src`) will trigger an automatic rebuild of the container, providing a seamless hot-reload experience for developers.
+  > **Access:** `http://<your-login>.42.fr:4321`
 
 ---
 
