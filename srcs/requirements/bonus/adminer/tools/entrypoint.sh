@@ -2,6 +2,6 @@
 
 set -e
 
-echo "[Entyrpoint] Starting Adminer"
+echo "[Entrypoint] Starting Adminer"
 
 exec "$@"
