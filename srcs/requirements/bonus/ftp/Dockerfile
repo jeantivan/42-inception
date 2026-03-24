@@ -3,7 +3,7 @@ FROM alpine:${ALPINE_VERSION}
 
 RUN apk add --no-cache \
 	vsftpd \
-	shadow
+	shadow netcat-openbsd
 
 RUN mkdir -p /var/run/vsftpd/empty \
 	/var/log/vsftpd \
