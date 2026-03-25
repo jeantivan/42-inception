@@ -29,7 +29,7 @@ Inception is a system administration project that deepens your understanding of 
 
 The stack is composed of three core services, each isolated in its own container:
 
-- **NGINX** — the sole entry point into the infrastructure, serving traffic exclusively over HTTPS (TLSv1.2/TLSv1.3) on port 443.
+- **NGINX** — the sole entry point into the infrastructure, serving traffic exclusively over HTTPS (TLSv1.3) on port 443.
 - **WordPress + php-fpm** — the application layer, communicating with NGINX over port 9000.
 - **MariaDB** — the database backend, storing all WordPress data persistently.
 
@@ -108,8 +108,8 @@ secrets/
 ├── db_root_password.txt       # MariaDB root password
 ├── db_password.txt            # MariaDB password for the WordPress user
 ├── ftp_password.txt           # FTP server password
-├── wp_admin_password.txt      # WordPress administrator password
-└── wp_user_password.txt       # WordPress regular user password
+├── wordpress_admin_password.txt      # WordPress administrator password
+└── wordpress_user_password.txt       # WordPress regular user password
 ```
 
 Example — creating a secret file:
@@ -132,16 +132,28 @@ make
 
 The Makefile will create the required host directories, build all Docker images from their respective Dockerfiles, and bring the stack up with Docker Compose. The first build may take a few minutes depending on your internet connection.
 
+To pause the infrastructure by stopping the containers without removing them.
+
+```bash
+make stop
+```
+
 To stop and remove the containers while preserving your data volumes:
 
 ```bash
-make down
+make clean
 ```
 
-To perform a full teardown (containers, volumes, and built images):
+Deep clean. Removes containers, networks, volumes, images, and the local data directory:
 
 ```bash
 make fclean
+```
+
+Rebuilds everything from scratch:
+
+```bash
+make re
 ```
 
 
@@ -173,7 +185,7 @@ In addition to the mandatory requirements, this project implements several bonus
 - **FTP Server (`ftp`)** A File Transfer Protocol server connected directly to the `wordpress_data` volume. It allows administrators to remotely upload, download, and manage the website's core files, themes, and plugins via port 21 (control) and ports 30000-30009 (passive data connections), using the secure credentials defined in your `secrets/` directory.
 
 - **Adminer (`adminer`)** A lightweight, full-featured database management tool contained in a single PHP file. It provides a clean Graphical User Interface (GUI) to easily inspect and manage the MariaDB database without needing to use the command line.
-  > **Access:** `http://<your-login>.42.fr/adminer`
+  > **Access:** `https://<your-login>.42.fr/adminer`
 
 - **Static Website (`static_site`)** A standalone static webpage served as a production-ready Node.js application. It is built using a highly optimized multi-stage Dockerfile that compiles the assets and runs only the lightweight runtime environment. Following the strict network isolation rules, it is not exposed directly to the host; instead, NGINX acts as a reverse proxy to serve it securely over HTTPS.
   > **Access:** `https://<your-login>.42.fr/docs/`
