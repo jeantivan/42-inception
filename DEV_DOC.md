@@ -2,76 +2,61 @@
 
 # Inception - Developer Documentation
 
-This document provides technical guidelines for developers on how to set up, build, manage, and understand the underlying architecture of the Inception infrastructure.
+This document provides technical guidelines for developers and evaluators on how to set up, build, manage, and understand the underlying architecture of the Inception infrastructure.
 
-## 1. Setting Up the Environment from Scratch
+## 1. Prerequisites & Setup
 
-Before launching the project, the environment must be properly configured with the necessary prerequisites, configuration files, and secrets.
+Before launching the project, the environment must be properly configured with the necessary tools, configuration files, and security secrets.
 
 ### Prerequisites
 * **Docker & Docker Compose**: Ensure you have the latest versions installed on your host machine or Virtual Machine.
 * **Make**: Required to run the automation scripts provided in the repository.
-* **Host Configuration**: The project uses a local domain (`jtivan-r.42.fr`). The `Makefile` includes a `check_host` rule that automatically appends `127.0.0.1 jtivan-r.42.fr` to your `/etc/hosts` file.
+* **Host Configuration (sudo)**: The project uses a local domain (`<your-login>.42.fr`). The `Makefile` requires `sudo` privileges to automatically map `127.0.0.1` to your domain in the `/etc/hosts` file.
 
-### Configuration Files
-* **Environment Variables**: General environment configurations are stored in an `.env` file located at `./srcs/.env`. If it does not exist, the `Makefile` will prompt an error. You must create it and define variables such as `DOMAIN_NAME` and other non-sensitive setup parameters.
+### Setup: Configuration Files & Secrets
+To maintain strict security standards, configuration and sensitive data are decoupled:
+* **Environment Variables (`.env`)**: General configurations (domain name, DB names, users) are stored in `./srcs/.env`. If missing, the `Makefile` will halt the build.
+* **Secrets Management**: Passwords are **never** stored in the `.env` file or hardcoded. They must be created as plain text files inside the `./secrets/` directory. The `Makefile` strictly checks for:
+  * `db_root_password.txt`
+  * `db_password.txt`
+  * `wordpress_admin_password.txt`
+  * `wordpress_guest_password.txt`
+  * `ftp_password.txt`
 
-### Secrets Management
-For security reasons, passwords are not stored in the `.env` file or hardcoded into Dockerfiles. They must be created as plain text files inside the `./secrets/` directory. The `Makefile` will strictly check for the existence of the following files before building:
-* `db_root_password.txt`
-* `db_password.txt`
-* `wordpress_admin_password.txt`
-* `wordpress_guest_password.txt`
-* `ftp_password.txt` (Required for the bonus part)
+## 2. Compose Commands & Lifecycle Management
 
-## 2. Building and Launching the Project
+The project uses a `Makefile` to wrap standard Docker Compose commands (`docker compose -f ./srcs/docker-compose.yml`), providing a clear, C-style lifecycle management.
 
-The project relies on a `Makefile` to orchestrate the build process using Docker Compose. The compose file is located at `./srcs/docker-compose.yml`.
+* **`make` / `make all`**: Initializes the infrastructure. It checks prerequisites, prepares host directories, builds images from scratch (`docker compose up -d --build`), and starts the containers in the background.
+* **`make stop`**: Gracefully pauses the infrastructure (`docker compose stop`). Containers and networks remain intact.
+* **`make clean`**: Removes the containers and networks (`docker compose down --remove-orphans`). Similar to removing `.o` files in C, the persistent data remains safe.
+* **`make fclean`**: Performs a deep system wipe. It executes `docker compose down -v --rmi all`, runs a `docker system prune -a -f`, and recursively deletes the local data directories. Use this for a complete factory reset.
+* **Debugging Commands**:
+  * `docker ps -a` (Check container health status)
+  * `docker compose -f srcs/docker-compose.yml logs -f <service>` (Tail logs)
+  * `docker exec -it <container_name> sh` (Access container shell)
 
-* **Initialization**: Run `make` or `make up`. This command executes a sequence of checks (`check_files`, `check_host`, `prepare_dirs`), builds the Docker images from scratch (`--no-cache`), and brings up the containers in detached mode (`-d`).
-* **Under the Hood**: The `Makefile` ensures that the data directories are created on the host before Docker attempts to bind them, preventing permission issues.
+## 3. Data Persistence
 
-## 3. Managing Containers and Volumes
+To ensure that data survives container restarts or `make clean` executions, the project utilizes **Docker Named Volumes** mapped to specific directories on the host machine.
 
-You can manage the lifecycle of the infrastructure using the following `Makefile` rules and Docker commands:
-
-* **`make clean`**: Gracefully stops all running containers defined in the compose file without destroying them.
-* **`make down`**: Stops and removes all containers, networks, and named volumes associated with the project (`docker compose down -v`). Use this for a complete reset.
-* **Manual Debugging**:
-  * Use `docker ps` to verify the state of the containers.
-  * Use `docker logs <container_name>` to inspect the output of a specific service (e.g., NGINX, WordPress, MariaDB).
-  * Use `docker exec -it <container_name> sh` to open a shell inside a running container for direct troubleshooting.
-
-## 4. Data Storage and Persistence
-
-To ensure that data survives container restarts or removals, the project utilizes Docker named volumes[cite: 522].
-
-* **Host Location**: According to the `Makefile`, the persistent data is physically stored on the host machine at `/home/${USER}/data`.
+* **Host Location**: Persistent data is physically stored on the host at `/home/<your-login>/data`.
 * **Volumes Used**:
-  1. **Database Volume**: Stores the MariaDB data files, ensuring all WordPress posts, users, and configurations persist.
-  2. **Web Files Volume**: Stores the downloaded WordPress core files and user uploads, shared between the WordPress and NGINX (if needed) or FTP containers.
-* **Persistence Mechanism**: Even if you run `make clean`, the data remains intact in the `VOLUME_DIR`. The data is only wiped if you explicitly remove the volumes (e.g., via `make down` which uses the `-v` flag, or `make fclean`).
+  1. `mariadb_data`: Stores the MariaDB SQL files. Ensures all WordPress posts, users, and DB configurations persist.
+  2. `wordpress_data`: Stores the downloaded WordPress core files, themes, and user uploads. It is shared between the `wordpress`, `nginx`, and `ftp` containers.
+* **Persistence Mechanism**: Data remains intact through standard stops and restarts. The data is **only** wiped if you explicitly remove the volumes via `make fclean`.
 
-## 5. Bonus Architecture and Services
+## 4. Architecture & Development Notes
 
-The project includes an extended architecture with four additional containers, fully integrated into the `inception_network`.
+This section details specific architectural decisions and optimizations implemented in the Dockerfiles and Entrypoints.
 
-### FTP Service (`ftp`)
-* **Purpose**: Allows direct file manipulation of the WordPress webroot.
-* **Configuration**: It binds directly to the `wordpress_data` volume.
-* **Networking**: Exposes port `21` for the command channel and the port range `30000-30009` for passive data connections.
-* **Security**: Authentication relies on the `ftp_password` Docker secret. It waits for the `wordpress` container to start before initializing.
+### Core Services
+* **NGINX**: Configured exclusively for TLSv1.3. Worker processes are correctly dropped to the `nginx` user. Cache directories are explicitly `chown`-ed to prevent 500 Internal Server Errors during heavy proxying.
+* **MariaDB**: Initialization scripts are silenced (`> /dev/null 2>&1`) to keep Docker logs clean. The container runs entirely under the `mysql` user.
+* **WordPress**: The entrypoint uses **Active Polling** (a PHP `mysqli_connect` loop) instead of a hardcoded `sleep` to wait for MariaDB. This prevents race conditions during the initial DB setup.
 
-### Redis Cache (`redis`)
-* **Purpose**: In-memory data structure store used as a database cache to optimize WordPress performance.
-* **Dependencies**: The `wordpress` service has a strict dependency on Redis; it will not initialize until the Redis container passes its healthcheck using `redis-cli ping`.
-
-### Adminer (`adminer`)
-* **Purpose**: A lightweight, single-file PHP database management tool.
-* **Networking**: The service is exposed on port `8080`.
-* **Dependencies**: It requires the `mariadb` container to be healthy before starting. Furthermore, the main `nginx` entry point waits for Adminer to start.
-
-### Static Site (`static_site`)
-* **Purpose**: Serves a completely independent, production-ready static website (e.g., built with Node.js/Astro).
-* **Architecture**: Utilizes a multi-stage `Dockerfile` to compile the source code and discard development dependencies, ensuring a minimal and secure final image.
-* **Networking**: The container runs internally on port `4321` but does **not** expose this port to the host to maintain strict network isolation. Instead, NGINX is configured as a reverse proxy to route traffic from `https://<domain>/docs/` directly to this container. NGINX is also configured to wait for this service to be healthy before starting.
+### Bonus Services
+* **FTP Server (`ftp`)**: The `vsftpd` user is added to the `nobody` group. This critical step ensures that files uploaded via FTP can be seamlessly read/executed by PHP-FPM without triggering 403 Forbidden errors.
+* **Redis Cache (`redis`)**: Configured as a volatile object cache. Disk persistence (`save ""`) is disabled to eliminate unnecessary I/O overhead. Health is verified via `redis-cli ping`.
+* **Adminer (`adminer`)**: Implemented as a highly lightweight, stateless container. It relies on PHP's built-in web server and deliberately does *not* wait for MariaDB to start, ensuring loose coupling.
+* **Static Site (`static_site`)**: Built using Astro/Node.js. The `Dockerfile` uses a highly optimized **multi-stage build** to discard dev-dependencies. It is strictly isolated and only accessible via NGINX reverse proxy (`/docs/`).

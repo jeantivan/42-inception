@@ -67,7 +67,7 @@ A **Docker network** (bridge mode) creates a private virtual network shared only
 
 **Bind mounts** map a specific path on the host machine directly into the container. They are simple but tightly couple the container to the host's filesystem layout, making the setup less portable and harder to manage.
 
-**Docker named volumes** are managed entirely by Docker. Docker creates and maintains the storage area, and containers reference volumes by name rather than by host path. Named volumes are more portable, easier to back up, and better suited for production-style data persistence. In this project, named volumes are mandatory for the WordPress database and website files, and their data is stored at `/home/<login>/data` on the host — but accessed through Docker's volume management layer, not as raw bind mounts.
+**Docker named volumes** are managed entirely by Docker. Docker creates and maintains the storage area, and containers reference volumes by name rather than by host path. Named volumes are more portable, easier to back up, and better suited for production-style data persistence. In this project, named volumes are mandatory for the WordPress database and website files, and their data is stored at `/home/<your-login>/data` on the host — but accessed through Docker's volume management layer, not as raw bind mounts.
 
 ---
 
@@ -185,7 +185,7 @@ In addition to the mandatory requirements, this project implements several bonus
 - **FTP Server (`ftp`)** A File Transfer Protocol server connected directly to the `wordpress_data` volume. It allows administrators to remotely upload, download, and manage the website's core files, themes, and plugins via port 21 (control) and ports 30000-30009 (passive data connections), using the secure credentials defined in your `secrets/` directory.
 
 - **Adminer (`adminer`)** A lightweight, full-featured database management tool contained in a single PHP file. It provides a clean Graphical User Interface (GUI) to easily inspect and manage the MariaDB database without needing to use the command line.
-  > **Access:** `https://<your-login>.42.fr/adminer`
+  > **Access:** `https://<your-login>.42.fr/adminer/`
 
 - **Static Website (`static_site`)** A standalone static webpage served as a production-ready Node.js application. It is built using a highly optimized multi-stage Dockerfile that compiles the assets and runs only the lightweight runtime environment. Following the strict network isolation rules, it is not exposed directly to the host; instead, NGINX acts as a reverse proxy to serve it securely over HTTPS.
   > **Access:** `https://<your-login>.42.fr/docs/`
