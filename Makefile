@@ -81,21 +81,25 @@ up: check_files check_host prepare_dirs
 	docker compose -f $(COMPOSE_FILE) build --no-cache
 	docker compose -f $(COMPOSE_FILE) up -d --remove-orphans
 
-clean:
+stop:
 	@echo -e "${BOLD_YELLOW}Stopping containers...${NO_COLOR}"
 	@docker compose -f $(COMPOSE_FILE) stop
-	@echo -e "${GREEN}All containers stopped.${NO_COLOR}"
+	@echo -e "${GREEN}Containers stopped.${NO_COLOR}"
 
-down: clean
-	@echo -e "${BOLD_YELLOW}Stopping and removing containers, networks, and volumes...${NO_COLOR}"
-	@docker compose -f $(COMPOSE_FILE) down -v --remove-orphans
-	@echo -e "${GREEN}All containers, networks, and volumes have been removed.${NO_COLOR}"
+start:
+	@echo -e "${BOLD_YELLOW}Starting containers...${NO_COLOR}"
+	@docker compose -f $(COMPOSE_FILE) start
+	@echo -e "${GREEN}Containers started.${NO_COLOR}"
 
-fclean: down
-	@echo -e "${BOLD_YELLOW}Removing all volumes...${NO_COLOR}"
-	@docker image prune -a -f
-	@docker network prune -f
-	@docker volume prune -f
+clean:
+	@echo -e "${BOLD_YELLOW}Removing containers and networks...${NO_COLOR}"
+	@docker compose -f $(COMPOSE_FILE) down --remove-orphans
+	@echo -e "${GREEN}Cleaned: Containers and networks removed.${NO_COLOR}"
+
+fclean: clean
+	@echo -e "${BOLD_YELLOW}Full clean: removing volumes, images and local data...${NO_COLOR}"
+	@docker compose -f $(COMPOSE_FILE) down -v --rmi all --remove-orphans
+	@docker system prune -a -f
 	@sudo rm -rf $(VOLUME_DIR)
 	@echo -e "${GREEN}All volumes have been removed.${NO_COLOR}"
 
@@ -104,4 +108,4 @@ re: fclean up
 logs:
 	docker compose -f $(COMPOSE_FILE) logs $(ARGS)
 
-.PHONY: all up clean down fclean re prepare_dirs logs
+.PHONY: all clean fclean re up start stop prepare_dirs logs
