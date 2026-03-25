@@ -14,8 +14,10 @@ endif
 # routing or volume mounting will not work as expected.
 # ==============================================================================
 
-VOLUME_DIR = /home/${USER}/data
-DOMAIN=jtivan-r.42.fr
+LOGIN = jtivan-r
+
+VOLUME_DIR = /home/$(LOGIN)/data
+DOMAIN=$(LOGIN).42.fr
 
 SECRET_DIR= ./secrets/
 
